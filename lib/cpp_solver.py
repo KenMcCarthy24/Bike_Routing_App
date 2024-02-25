@@ -1,3 +1,5 @@
+import time
+
 import networkx as nx
 from itertools import combinations
 
@@ -5,14 +7,14 @@ from itertools import combinations
 def solve_chinese_postman(G, start_node):
     """Solves the Chinese Postman Problem for a Graph G and the given starting node, finding the minimum length path
      that traverses all edges in the graph at least once and returns to the starting node."""
-    G = G.copy()
+    G_euler = G.copy()
     # If G is already eulerian, simply find and return the eulerian circuit of G
-    if nx.is_eulerian(G):
-        return list(nx.eulerian_circuit(G, source=start_node, keys=True))
+    if nx.is_eulerian(G_euler):
+        return G_euler, list(nx.eulerian_circuit(G_euler, source=start_node, keys=True))
     # If G is not eulerian, edges need to be duplicated to make it eulerian, while adding the least possible length
     else:
         # Find all nodes of odd degree in G
-        node_degrees = G.degree
+        node_degrees = G_euler.degree
         odd_nodes = []
         for key in dict(node_degrees):
             if node_degrees[key] % 2 != 0:
@@ -27,8 +29,8 @@ def solve_chinese_postman(G, start_node):
         # Add edges to G' representing these paths, with weights
         # representing the length of the shortest paths
         for u, v in list(combinations(odd_nodes, 2)):
-            shortest_path = nx.shortest_path(G, u, v, "weight")
-            shortest_path_length = nx.shortest_path_length(G, u, v, "weight")
+            shortest_path = nx.shortest_path(G_euler, u, v, "weight")
+            shortest_path_length = nx.shortest_path_length(G_euler, u, v, "weight")
 
             G_prime.add_edge(u, v, weight=shortest_path_length, path=shortest_path)
 
@@ -41,10 +43,10 @@ def solve_chinese_postman(G, start_node):
             matching_path = G_prime.get_edge_data(*matching_nodes)["path"]
 
             for i in range(len(matching_path) - 1):
-                min_weight_edge_metadata = min(G.get_edge_data(matching_path[i], matching_path[i + 1]).values(),
+                min_weight_edge_metadata = min(G_euler.get_edge_data(matching_path[i], matching_path[i + 1]).values(),
                                                key=lambda x: x['weight'])
 
-                G.add_edge(matching_path[i], matching_path[i + 1], **min_weight_edge_metadata)
+                G_euler.add_edge(matching_path[i], matching_path[i + 1], **min_weight_edge_metadata)
 
         # Now G should be Eulerian and an Eulerian path can be found
-        return list(nx.eulerian_circuit(G, source=start_node, keys=True))
+        return G_euler, list(nx.eulerian_circuit(G_euler, source=start_node, keys=True))

@@ -1,12 +1,23 @@
-from singleton import Singleton
+from lib.singleton import Singleton
 import osmnx as ox
 import networkx as nx
 import pandas as pd
+import numpy as np
 
 
-class StreetGraph(metaclass=Singleton):
+class StreetGraphManager(metaclass=Singleton):
     def __init__(self):
-        self.G = None
+        self.street_graph = None
+        self.street_graph_euler = None
+
+    def new_street_graph(self):
+        self.street_graph = StreetGraph()
+        self.street_graph_euler = None
+
+
+class StreetGraph:
+    def __init__(self, G=None):
+        self.G = G
 
     def build_from_bbox(self, north_lat_bound, south_lat_bound, west_lon_bound, east_lon_bound):
         nodes, edges = ox.utils_graph.graph_to_gdfs(
@@ -14,6 +25,9 @@ class StreetGraph(metaclass=Singleton):
                 ox.graph_from_bbox(north=north_lat_bound, south=south_lat_bound,
                                    east=east_lon_bound, west=west_lon_bound,
                                    network_type="bike", retain_all=True)))
+
+        if 'name' not in edges.columns:
+            edges['name'] = np.full(len(edges), np.nan)
 
         graph = nx.MultiGraph()
         for i in range(len(nodes)):
@@ -26,9 +40,11 @@ class StreetGraph(metaclass=Singleton):
             if isinstance(edge_info['name'], list):
                 edge_info['name'] = edge_info['name'][0]
 
+
             edge_points = [point for point in edge_info.geometry.coords]
 
-            if len(edge_info.geometry.coords) == 2:
+            # Make sure all edges have an odd number of points along their path (useful for plotting later)
+            if len(edge_info.geometry.coords) % 2 == 0:
                 middle_lat = (edge_points[0][1] + edge_points[1][1]) / 2
                 middle_lon = (edge_points[0][0] + edge_points[1][0]) / 2
                 edge_points.insert(1, (middle_lon, middle_lat))

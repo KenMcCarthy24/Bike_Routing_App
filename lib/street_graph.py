@@ -22,8 +22,7 @@ class StreetGraph:
     def build_from_bbox(self, north_lat_bound, south_lat_bound, west_lon_bound, east_lon_bound):
         nodes, edges = ox.utils_graph.graph_to_gdfs(
             ox.utils_graph.get_undirected(
-                ox.graph_from_bbox(north=north_lat_bound, south=south_lat_bound,
-                                   east=east_lon_bound, west=west_lon_bound,
+                ox.graph_from_bbox(bbox=(north_lat_bound, south_lat_bound, east_lon_bound, west_lon_bound),
                                    network_type="bike", retain_all=True)))
 
         if 'name' not in edges.columns:
@@ -39,7 +38,6 @@ class StreetGraph:
 
             if isinstance(edge_info['name'], list):
                 edge_info['name'] = edge_info['name'][0]
-
 
             edge_points = [point for point in edge_info.geometry.coords]
 
@@ -104,6 +102,9 @@ class StreetGraph:
                 edge1_info = self.G.edges[edge1_id]
                 edge2_id = node_edges[1]
                 edge2_info = self.G.edges[edge2_id]
+
+                if (edge1_id[0] == edge1_id[1]) or (edge2_id[0] == edge2_id[1]):
+                    continue
 
                 # Make sure graph points are correctly going from first node to second node
                 if (self.G.nodes[edge1_id[0]]['lon'], self.G.nodes[edge1_id[0]]['lat']) == edge1_info["points"][-1]:

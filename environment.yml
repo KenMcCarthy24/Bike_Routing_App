@@ -1,0 +1,14 @@
+name: bike_routing_app
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.*
+  - osmnx
+  - networkx
+  - numpy
+  - scipy
+  - pandas
+  - dash
+  - dash-bootstrap-components
+prefix: C:\Users\Kenneth\miniconda3\envs\dash_test

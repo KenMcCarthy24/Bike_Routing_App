@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - python=3.11.*
+  - plotly=5.19.*
   - osmnx
   - networkx
   - numpy

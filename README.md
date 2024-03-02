@@ -17,7 +17,7 @@ in the project folder and then running:
 `conda activate bike_routing app`
 
 Once an environment is created, the app is run by simply running `app.py`, which will launch the web
-application on `localhost::8050`
+application on `localhost:8050`
 
 
 ### Using the app
